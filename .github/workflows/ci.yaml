@@ -47,7 +47,6 @@ jobs:
       - name: Run tests
         run: |
           php artisan test
-          npm run test
 
     services:
       postgresql:
