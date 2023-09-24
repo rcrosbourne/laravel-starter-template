@@ -13,14 +13,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Postgres 15
-        uses: docker://postgres:15
+      - name: Setup Cache dependencies
+        uses: actions/cache@v2
         with:
-          args: -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=laravel -p 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test
+          path: vendor
+          key: ${{ runner.os }}-vendor-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-vendor-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -46,3 +45,15 @@ jobs:
         run: |
           php artisan test
           npm run test
+
+    services:
+      postgresql:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
